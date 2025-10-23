@@ -72,9 +72,8 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // ▼▼▼ [수정] 스크린샷 문제 해결: 상단 안전 영역(노치) 패딩 값 가져오기 ▼▼▼
     final topPadding = MediaQuery.of(context).padding.top;
-    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
 
     // (과제 요구사항 #1) 키보드 위로 바텀 시트가 올라오도록
     // MediaQuery.of(context).viewInsets.bottom (키보드 높이) 만큼 패딩
@@ -154,6 +153,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                     icon: Icon(
                       _isFavorite ? Icons.star : Icons.star_border,
                       size: 24,
+                      color: _isFavorite ? Colors.amber : Colors.grey,
                     ),
                     onPressed: () {
                       setState(() {
