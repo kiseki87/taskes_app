@@ -23,7 +23,7 @@ class NoToDoView extends StatelessWidget {
             borderRadius: BorderRadius.circular(12.0),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withAlpha(13),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -47,7 +47,7 @@ class NoToDoView extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                '할 일을 추가하고 멋진 하루를\n보내보세요! $title\가 응원해요!',
+                '할 일을 추가하고 멋진 하루를 보내보세요!\n$title가 응원해요!',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 14,
