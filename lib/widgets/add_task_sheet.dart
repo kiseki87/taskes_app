@@ -13,8 +13,6 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
   // 텍스트 필드 제어를 위한 컨트롤러
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  // '새 할 일' TextField에 자동으로 포커스를 주기 위한 FocusNode
-  // final _titleFocusNode = FocusNode(); // <-- autofocus: true를 사용할 것이므로 제거
 
   // 바텀 시트 내부의 상태 변수
   bool _isFavorite = false;
@@ -24,9 +22,6 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
   @override
   void initState() {
     super.initState();
-    //'새 할 일' TextField에 자동으로 포커스 잡기
-    // _titleFocusNode.requestFocus(); // <-- autofocus: true를 사용할 것이므로 제거
-
     // 텍스트 내용이 바뀔 때마다 _isSaveButtonEnabled 상태를 업데이트
     _titleController.addListener(() {
       setState(() {
@@ -37,10 +32,9 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
 
   @override
   void dispose() {
-    // 컨트롤러와 포커스 노드는 메모리 누수 방지를 위해 반드시 dispose()
+    // 컨트롤러는 메모리 누수 방지를 위해 반드시 dispose()
     _titleController.dispose();
     _descriptionController.dispose();
-    // _titleFocusNode.dispose(); // <-- 제거
     super.dispose();
   }
 
@@ -78,19 +72,26 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
 
   @override
   Widget build(BuildContext context) {
+    // ▼▼▼ [수정] 스크린샷 문제 해결: 상단 안전 영역(노치) 패딩 값 가져오기 ▼▼▼
+    final topPadding = MediaQuery.of(context).padding.top;
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
     // (과제 요구사항 #1) 키보드 위로 바텀 시트가 올라오도록
     // MediaQuery.of(context).viewInsets.bottom (키보드 높이) 만큼 패딩
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      // 다크모드 호환을 위해 Container 대신 Material 사용
       child: Material(
         // (과제 요구사항 #1) 좌우 패딩 20, 위 패딩 12
         child: Container(
-          padding: const EdgeInsets.only(top: 12, left: 20, right: 20),
+          // Top 패딩에 항상 'topPadding'(안전 영역)을 더해줌 
+          padding: EdgeInsets.only(
+            top: topPadding + 12, // '세부정보' 상태와 관계없이 항상 적용
+            left: 20,
+            right: 20,
+          ),
           child: Column(
-           //Column의 mainAxisSize를 동적으로 변경 
             // '세부정보'가 보일 땐 Column이 커져야 하고 (max)
             // '세부정보'가 안 보일 땐 내용만큼 작아져야 함 (min)
             mainAxisSize: _isDescriptionVisible
@@ -99,8 +100,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
             children: [
               TextField(
                 controller: _titleController,
-                // focusNode: _titleFocusNode, // <-- 제거
-                autofocus: true, // 나타날 때 자동으로 포커스
+                autofocus: true, // 키보드 자동 포커스
                 // (과제 요구사항 #1) 텍스트 스타일
                 style: const TextStyle(fontSize: 16),
                 decoration: const InputDecoration(

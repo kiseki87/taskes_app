@@ -6,11 +6,8 @@ import '../models/todo_entity.dart'; // 'ToDoEntity' 데이터 모델
 import 'detail_page.dart'; // '상세보기' 페이지
 
 
-
 class HomePage extends StatefulWidget { // StatefulWidget을 상속. Statefulwidget으로 State를 가질 수 있게 적용.
-
   const HomePage({super.key});
-
 
   @override
   State<HomePage> createState() => _HomePageState(); // State 클래스 생성.
@@ -21,13 +18,13 @@ class _HomePageState extends State<HomePage> {
   // 할 일 목록을 담을 리스트 (State)
   final List<ToDoEntity> _tasks = [];
 
- // '완료' 상태 토글 함수
+  // --- '할 일' 상태 변경 함수들 ---
+
+  // '완료' 상태 토글 함수
   void _toggleDone(String id) {
     setState(() {
-      // 리스트에서 ID가 일치하는 task(toDo)를 찾기.
       final task = _tasks.firstWhere((task) => task.id == id);
       final taskIndex = _tasks.indexOf(task);
-      // 찾은 인덱스 위치의 task를 'isDone' 상태만 반전시킨 새 task 객체로 교체.
       _tasks[taskIndex] = ToDoEntity(
         id: task.id,
         title: task.title,
@@ -53,26 +50,40 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // '할 일' 수정 함수
+  void _updateTask(ToDoEntity updatedTask) {
+    setState(() {
+      final taskIndex =
+          _tasks.indexWhere((task) => task.id == updatedTask.id);
+      if (taskIndex != -1) {
+        _tasks[taskIndex] = updatedTask;
+      }
+    });
+  }
+
   // '할 일' 삭제 함수
   void _deleteTask(String id) {
     setState(() {
+      // 리스트에서 ID가 일치하는 task를 제거.
       _tasks.removeWhere((task) => task.id == id);
     });
   }
 
-  // (신규) '상세보기' 페이지로 이동하는 함수
+  // (수정) '상세보기' 페이지로 이동하는 함수
   void _navigateToDetail(ToDoEntity toDo) {
-    // Navigator.push로 새 화면을 띄우고, .then()으로 돌아왔을 때의 값 처리
     Navigator.push(
       context,
       MaterialPageRoute(builder: (ctx) => DetailPage(toDo: toDo)),
-    ).then((returnedFavoriteStatus) {
-      // DetailPage에서 pop으로 반환한 값(즐겨찾기 상태)을 처리
-      // 돌아온 값이 null이 아니고, 원래의 즐겨찾기 상태와 다르다면
-      if (returnedFavoriteStatus != null &&
-          returnedFavoriteStatus != toDo.isFavorite) {
-        // HomePage의 _toggleFavorite 함수를 호출하여 _tasks 리스트의 상태를 업데이트
-        _toggleFavorite(toDo.id);
+    ).then((returnedValue) { // 이제 'dynamic' 타입의 값을 받음
+      // (수정) DetailPage에서 반환된 값을 처리
+      if (returnedValue == null) return; // 아무 값도 없으면 종료
+
+      if (returnedValue == "DELETE") {
+        // '삭제' 버튼을 눌렀을 때
+        _deleteTask(toDo.id);
+      } else if (returnedValue is ToDoEntity) {
+        // '뒤로 가기' 버튼을 눌렀을 때 (수정된 객체 반환)
+        _updateTask(returnedValue);
       }
     });
   }
@@ -97,14 +108,17 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
     const String appBarTitle = '창수의 Tasks'; // AppBar 제목을 변수로 사용
 
+
     return Scaffold(
+   
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        // (도전 과제 #1) AppBar의 배경색을 테마의 Scaffold 배경색과 맞춤.
+      
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0, // AppBar 그림자 제거
         title: Text(
@@ -133,7 +147,7 @@ class _HomePageState extends State<HomePage> {
                   onToggleDone: () => _toggleDone(toDo.id),
                   onToggleFavorite: () => _toggleFavorite(toDo.id),
                   onDelete: () => _deleteTask(toDo.id),
-                  // (신규) '상세보기'로 이동하는 함수를 onTap으로 전달
+                  // '상세보기'로 이동하는 함수를 onTap으로 전달
                   onTap: () => _navigateToDetail(toDo),
                 );
               },
@@ -151,3 +165,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+

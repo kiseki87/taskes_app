@@ -1,11 +1,8 @@
-
-
 import 'package:flutter/material.dart';
 import '../models/todo_entity.dart'; // ToDoEntity 모델 import
 
-// '상세보기' 페이지 위젯
+// '상세보기/수정' 페이지 위젯
 class DetailPage extends StatefulWidget {
-  // (과제 요구사항 #2) ToDoEntity를 받아서 화면 컨텐츠를 채움
   final ToDoEntity toDo;
 
   const DetailPage({super.key, required this.toDo});
@@ -15,52 +12,84 @@ class DetailPage extends StatefulWidget {
 }
 
 class _DetailPageState extends State<DetailPage> {
-  late bool _isFavorite; // bool 타입의 로컬 변수 선언 - 내부 상태 관리용
+  // '즐겨찾기'와 '세부정보'를 수정하기 위한 로컬 변수
+  late bool _isFavorite;
+  // (신규) '세부정보' 수정을 위한 텍스트 컨트롤러
+  late TextEditingController _descriptionController;
 
   @override
   void initState() {
     super.initState();
-    _isFavorite = widget.toDo.isFavorite; // 'toDo' 객체로부터 초기 '즐겨찾기' 상태를 가져와 로컬 변수에 저장
+    _isFavorite = widget.toDo.isFavorite;
+    //  컨트롤러를 'toDo' 객체의 'description' 값으로 초기화
+    _descriptionController =
+        TextEditingController(text: widget.toDo.description);
+  }
+
+ 
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  //  '뒤로 가기' 또는 '삭제' 시 HomePage로 데이터를 반환하는 함수
+  void _popWithData(dynamic result) {
+    Navigator.pop(context, result);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-       //AppBar - leading (뒤로 가기 버튼)
-       //back button을 통해서 뒤로가기 구현
-       //pop할 때 변경된 _isFavorite 값을 반환
+        // '뒤로 가기' 버튼 
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context, _isFavorite); // 현재 즐겨찾기 상태를 반환
+            // 뒤로 갈 때 '수정된 ToDoEntity' 객체를 반환
+            final updatedTask = ToDoEntity(
+              id: widget.toDo.id,
+              title: widget.toDo.title,
+              description: _descriptionController.text.isNotEmpty
+                  ? _descriptionController.text
+                  : null,
+              isDone: widget.toDo.isDone,
+              isFavorite: _isFavorite, // 수정된 즐겨찾기 상태
+            );
+            _popWithData(updatedTask);
           },
         ),
-        //  AppBar - actions (즐겨찾기 버튼)
+        // '즐겨찾기' 및 '삭제' 버튼
         actions: [
+          // '즐겨찾기' 버튼
           IconButton(
             icon: Icon(
               _isFavorite ? Icons.star : Icons.star_border,
               color: _isFavorite ? Colors.amber : Colors.grey,
             ),
-            // favorite 변경 구현
             onPressed: () {
-              // setState를 호출하여 이 페이지의 '즐겨찾기' 상태를 토글
               setState(() {
                 _isFavorite = !_isFavorite;
               });
             },
           ),
+          //  '삭제' 버튼
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: Colors.grey),
+            onPressed: () {
+              //  삭제 시 "DELETE" 문자열을 반환
+              _popWithData("DELETE");
+            },
+          ),
         ],
       ),
-      //  ToDoEntity로 컨텐츠 채우기
+      // '세부정보' 수정 본문 
       body: Padding(
-        // 좌우 패딩 20
         padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // 텍스트를 왼쪽 정렬
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // '할 일' 제목
+            // '할 일' 제목 
             Text(
               widget.toDo.title,
               style: const TextStyle(
@@ -69,14 +98,26 @@ class _DetailPageState extends State<DetailPage> {
               ),
             ),
             const SizedBox(height: 16),
-            // '할 일' 세부 설명
-            // description이 null이거나 비어있으면 '세부정보 없음' 표시
-            Text(
-              widget.toDo.description ?? '세부정보 없음',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[700],
-                height: 1.5,
+            // '세부정보'를 Text에서 TextField로 변경
+            Expanded(
+              child: TextField(
+                controller: _descriptionController,
+                decoration: InputDecoration(
+                  hintText: '세부정보 없음',
+                  border: InputBorder.none, // 깔끔하게 밑줄 제거
+                  hintStyle: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  height: 1.5,
+                ),
+                keyboardType: TextInputType.multiline,
+                maxLines: null, // 무제한 줄바꿈
+                autofocus: true, // 화면에 들어오면 바로 포커스
               ),
             ),
           ],
