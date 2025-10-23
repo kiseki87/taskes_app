@@ -32,7 +32,7 @@ class ToDoView extends StatelessWidget {
           borderRadius: BorderRadius.circular(12), // 모서리 둥글게
           boxShadow: [  // 박스 그림자 효과 추가
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withAlpha(13),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
